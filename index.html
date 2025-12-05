@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Floating Productivity Bar POC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="prodBar">
+
+    <!-- Drag Handle -->
+    <div id="dragHandle">⋮⋮</div>
+
+    <!-- Metrics -->
+    <div id="barContent">
+        <span id="queueName">Queue: Support</span>
+        <span id="waiting">Waiting: 0</span>
+        <span id="longestWait">Longest Wait: 00:00</span>
+        <span id="agentStatus">Status: Offline</span>
+    </div>
+
+    <!-- Icons -->
+    <div id="barIcons">
+        <span id="collapseBtn">⯈</span>
+        <span id="settingsBtn">⚙</span>
+        <span id="closeBtn">✕</span>
+    </div>
+
+</div>
+
+
+<script src="app.js"></script>
+</body>
+</html>

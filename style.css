@@ -1,0 +1,78 @@
+/* Floating bar styling */
+#prodBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* let height be driven by content */
+    height: auto;
+    padding: 6px 14px;
+    
+    background: rgba(0, 0, 0, 0.65); /* transparent black */
+    backdrop-filter: blur(6px);      /* nice subtle blur */
+    color: white;
+    
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 13px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;      /* small consistent spacing between left/middle/right */
+
+    -webkit-app-region: no-drag; /* Default: not draggable */
+}
+/* Drag handle */
+#dragHandle {
+    -webkit-app-region: drag; /* Only this part is draggable */
+    padding: 0 6px;
+    cursor: grab;
+    font-weight: bold;
+    opacity: 0.6;
+}
+
+#dragHandle:hover {
+    opacity: 1;
+}
+
+/* Content inside bar */
+#barContent span {
+    display: inline-block;
+    min-width: 110px;    /* was 150px */
+    white-space: nowrap;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+}
+
+#barContent span {
+    display: inline-block;
+    min-width: 80px;     /* lock width so text doesn't push others */
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;  /* prevents “jumpy” digits in modern browsers */
+}
+
+#barContent span + span {
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    padding-left: 12px;
+}
+
+/* Icons */
+#barIcons {
+    display: flex;
+    align-items: center;
+    gap: 6px;            /* very small spacing */
+}
+
+#barIcons span:hover {
+    opacity: 1;
+}
+
+/* Close button styling */
+#closeBtn {
+    color: #ff5555;
+    font-weight: bold;
+}
+/* Color states for load-levels */
+.green { background: rgba(0, 128, 0, 0.65); }
+.yellow { background: rgba(255, 165, 0, 0.65); }
+.red { background: rgba(255, 0, 0, 0.65); }
