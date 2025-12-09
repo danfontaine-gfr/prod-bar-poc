@@ -9,9 +9,6 @@
 
 <div id="prodBar">
 
-    <!-- Drag Handle -->
-    <div id="dragHandle">⋮⋮</div>
-
     <!-- TABLE CONTENT -->
     <table id="queueTable">
         <thead>
@@ -23,50 +20,50 @@
                 <th>ABDN</th>
             </tr>
         </thead>
-        <tbody>
-            <tr data-queue="Support">
-                <td>Support</td>
-                <td class="waiting">0</td>
-                <td class="longest">00:00</td>
-                <td class="aht">00:00</td>
-                <td class="abdn">0%</td>
-            </tr>
-            <tr data-queue="Sales">
-                <td>Sales</td>
-                <td class="waiting">0</td>
-                <td class="longest">00:00</td>
-                <td class="aht">00:00</td>
-                <td class="abdn">0%</td>
-            </tr>
-            <tr data-queue="Service">
-                <td>Service</td>
-                <td class="waiting">0</td>
-                <td class="longest">00:00</td>
-                <td class="aht">00:00</td>
-                <td class="abdn">0%</td>
-            </tr>
-            <tr data-queue="VIP">
-                <td>VIP</td>
-                <td class="waiting">0</td>
-                <td class="longest">00:00</td>
-                <td class="aht">00:00</td>
-                <td class="abdn">0%</td>
-            </tr>
-            <tr data-queue="Overflow">
-                <td>Overflow</td>
-                <td class="waiting">0</td>
-                <td class="longest">00:00</td>
-                <td class="aht">00:00</td>
-                <td class="abdn">0%</td>
-            </tr>
+        <tbody id="queueBody">
+            <!-- Rows generated dynamically -->
         </tbody>
     </table>
 
-    <!-- Icons -->
+    <!-- Icons / Controls (2x2 grid on the right) -->
     <div id="barIcons">
-        <span id="collapseBtn">⯈</span>
-        <span id="settingsBtn">⚙</span>
-        <span id="closeBtn">✕</span>
+        <div class="icon-row">
+            <span id="dragHandle">⋮⋮</span>
+            <span id="collapseBtn">⯈</span>
+        </div>
+        <div class="icon-row">
+            <span id="settingsBtn">⚙</span>
+            <span id="closeBtn">✕</span>
+        </div>
+    </div>
+
+    <!-- Settings Panel (side docked) -->
+    <div id="settingsModal">
+        <div id="settingsPanel">
+            <div id="settingsHeader">
+                <h3>Settings</h3>
+                <button type="button" id="settingsClose" aria-label="Close settings">✕</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">Theme</div>
+                <label class="settings-option">
+                    <input type="radio" name="theme" id="themeDark" value="dark">
+                    Dark
+                </label>
+                <label class="settings-option">
+                    <input type="radio" name="theme" id="themeLight" value="light">
+                    Light
+                </label>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-label">Queues (up to 5)</div>
+                <div id="queueOptions">
+                    <!-- Queue checkboxes populated by app.js -->
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

@@ -3,20 +3,22 @@ html, body {
     margin: 0;
     padding: 0;
     background: transparent;
+    overflow: hidden;        /* never show scrollbars */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 /* Floating bar container: size driven by content */
 #prodBar {
+    position: relative;
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     gap: 8px;
 
-    margin: 4px;           /* gives space so shadow isn't cut off */
+    margin: 4px;           /* space so shadow isn't clipped */
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 8px;
 
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 13px;
 
     -webkit-app-region: no-drag;
@@ -25,10 +27,12 @@ html, body {
 /* Drag handle */
 #dragHandle {
     -webkit-app-region: drag;
-    padding: 0 6px;
+    padding: 0 4px;
     cursor: grab;
-    font-weight: bold;
+    font-weight: 600;
     opacity: 0.6;
+    letter-spacing: 0.06em;
+    font-size: 11px;
 }
 
 #dragHandle:hover {
@@ -38,7 +42,6 @@ html, body {
 /* TABLE LAYOUT */
 #queueTable {
     border-collapse: collapse;
-    margin-left: 6px;
 }
 
 #queueTable th {
@@ -67,63 +70,207 @@ html, body {
     border-top: 1px solid rgba(255,255,255,0.20);
 }
 
-/* Icons block */
+/* Icons block (2 rows, top-right) */
 #barIcons {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 4px;
     margin-left: 8px;
+}
+
+.icon-row {
+    display: flex;
+    gap: 4px;
 }
 
 #barIcons span {
     cursor: pointer;
     opacity: 0.75;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
 }
 
 #barIcons span:hover {
     opacity: 1;
+    background-color: rgba(255,255,255,0.06);
 }
 
-/* Close button styling (base; themes can override color) */
+/* Close button styling (base; themes override color) */
 #closeBtn {
     color: #FF5555;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 /* ----- THEMES ----- */
 
-/* Dark mode:
-   - Background: rgba(25,25,25,0.8)
-   - Text/icons: #E6E6E6
-*/
+/* Dark mode */
 body.dark-mode #prodBar {
-    background: rgba(25, 25, 25, 0.8);
+    background: rgba(20, 20, 20, 0.88);
     color: #E6E6E6;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.40);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.06);
 }
 
 body.dark-mode #queueTable tr + tr td {
-    border-top: 1px solid rgba(230,230,230,0.20);
+    border-top: 1px solid rgba(230,230,230,0.16);
 }
 
 body.dark-mode #closeBtn {
     color: #FF8888;
 }
 
-/* Light mode:
-   - Background: rgba(250,250,250,0.8)
-   - Text/icons: #1A1A1A
-*/
+/* Light mode */
 body.light-mode #prodBar {
-    background: rgba(250, 250, 250, 0.8);
+    background: rgba(250, 250, 250, 0.92);
     color: #1A1A1A;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.20);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.20);
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 body.light-mode #queueTable tr + tr td {
-    border-top: 1px solid rgba(26,26,26,0.20);
+    border-top: 1px solid rgba(26,26,26,0.18);
 }
 
 body.light-mode #closeBtn {
     color: #B12222;
+}
+
+/* ----- SETTINGS PANEL (SIDE DOCKED) ----- */
+
+#settingsModal {
+    display: none;      /* toggled via JS */
+    margin-left: 10px;  /* gap between bar and panel */
+}
+
+#settingsModal.visible {
+    display: block;
+}
+
+#settingsPanel {
+    min-width: 260px;
+    max-width: 320px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.65);
+    border: 1px solid rgba(255,255,255,0.06);
+    transform: translateX(4px);
+    opacity: 0;
+    transition:
+        opacity 130ms ease-out,
+        transform 130ms ease-out;
+}
+
+/* animate in when visible */
+#settingsModal.visible #settingsPanel {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Header in settings panel */
+#settingsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+#settingsHeader h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* X button in settings header */
+#settingsClose {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0 0 0 8px;
+    opacity: 0.7;
+}
+
+#settingsClose:hover {
+    opacity: 1;
+}
+
+/* Dark mode panel */
+body.dark-mode #settingsPanel {
+    background: rgba(18,18,18,0.96);
+    color: #E6E6E6;
+    border-color: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+}
+
+body.dark-mode #settingsClose {
+    color: #E6E6E6;
+}
+
+/* Light mode panel */
+body.light-mode #settingsPanel {
+    background: rgba(252,252,252,0.98);
+    color: #1A1A1A;
+    border-color: rgba(0,0,0,0.06);
+    backdrop-filter: blur(12px);
+}
+
+body.light-mode #settingsClose {
+    color: #1A1A1A;
+}
+
+.settings-section {
+    margin-top: 10px;
+    padding-top: 8px;
+}
+
+.settings-section + .settings-section {
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+body.light-mode .settings-section + .settings-section {
+    border-top-color: rgba(0,0,0,0.06);
+}
+
+.settings-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+    margin-bottom: 4px;
+}
+
+.settings-option {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+    font-size: 13px;
+}
+
+.settings-option input {
+    margin-right: 4px;
+}
+
+#queueOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 4px;
+}
+
+#queueOptions label {
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+}
+
+#queueOptions input {
+    margin-right: 4px;
 }
