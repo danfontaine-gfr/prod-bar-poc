@@ -1,24 +1,28 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
+let mainWindow;
+
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 600,
+  mainWindow = new BrowserWindow({
+    width: 600,                 // initial guess; will be auto-resized
     height: 70,
-    minWidth: 500,
-    maxWidth: 1400,
     alwaysOnTop: true,
     frame: false,
     transparent: true,
-    resizable: true,          // ok for now; we can lock this later if you want
-    backgroundColor: '#00000000', // helps transparency behave nicely
+    backgroundColor: '#00000000',
+    resizable: false,           // we control size programmatically
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
 
-  win.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 }
 
 app.whenReady().then(() => {
@@ -31,4 +35,17 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+// Receive size hints from renderer and adjust window size
+ipcMain.on('resize-window', (event, size) => {
+  if (!mainWindow || !size) return;
+
+  const minWidth = 320;
+  const minHeight = 48;
+
+  const width = Math.max(minWidth, Math.round(size.width));
+  const height = Math.max(minHeight, Math.round(size.height));
+
+  mainWindow.setContentSize(width, height);
 });

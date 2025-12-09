@@ -1,31 +1,30 @@
-/* Floating bar styling */
+/* Reset & base */
+html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* Floating bar container: size driven by content */
 #prodBar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
 
-    height: auto;
+    margin: 4px;           /* gives space so shadow isn't cut off */
     padding: 6px 12px;
-
-    background: rgba(0, 0, 0, 0.65);   /* transparent black */
-    backdrop-filter: blur(6px);
-    color: white;
+    border-radius: 6px;
 
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 13px;
 
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;                           /* small, consistent spacing */
-
-    -webkit-app-region: no-drag;        /* default: not draggable */
+    -webkit-app-region: no-drag;
 }
 
 /* Drag handle */
 #dragHandle {
-    -webkit-app-region: drag;           /* only this part is draggable */
+    -webkit-app-region: drag;
     padding: 0 6px;
     cursor: grab;
     font-weight: bold;
@@ -36,24 +35,36 @@
     opacity: 1;
 }
 
-/* Metrics/content block */
-#barContent {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+/* TABLE LAYOUT */
+#queueTable {
+    border-collapse: collapse;
+    margin-left: 6px;
 }
 
-#barContent span {
-    display: inline-block;
-    min-width: 90px;                    /* keeps columns stable without stretching too far */
-    white-space: nowrap;
+#queueTable th {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.75;
     text-align: left;
-    font-variant-numeric: tabular-nums; /* prevents “jumpy” digits */
 }
 
-#barContent span + span {
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    padding-left: 10px;
+#queueTable td {
+    padding: 2px 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* right-align numeric columns (everything except first) */
+#queueTable th:not(:first-child),
+#queueTable td:not(:first-child) {
+    text-align: right;
+}
+
+/* default row separators (overridden per theme) */
+#queueTable tr + tr td {
+    border-top: 1px solid rgba(255,255,255,0.20);
 }
 
 /* Icons block */
@@ -61,6 +72,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-left: 8px;
 }
 
 #barIcons span {
@@ -72,13 +84,46 @@
     opacity: 1;
 }
 
-/* Close button styling */
+/* Close button styling (base; themes can override color) */
 #closeBtn {
-    color: #ff5555;
+    color: #FF5555;
     font-weight: bold;
 }
 
-/* Color states for load-levels */
-.green  { background: rgba(0, 128,   0, 0.65); }
-.yellow { background: rgba(255, 165, 0, 0.65); }
-.red    { background: rgba(255,   0, 0, 0.65); }
+/* ----- THEMES ----- */
+
+/* Dark mode:
+   - Background: rgba(25,25,25,0.8)
+   - Text/icons: #E6E6E6
+*/
+body.dark-mode #prodBar {
+    background: rgba(25, 25, 25, 0.8);
+    color: #E6E6E6;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.40);
+}
+
+body.dark-mode #queueTable tr + tr td {
+    border-top: 1px solid rgba(230,230,230,0.20);
+}
+
+body.dark-mode #closeBtn {
+    color: #FF8888;
+}
+
+/* Light mode:
+   - Background: rgba(250,250,250,0.8)
+   - Text/icons: #1A1A1A
+*/
+body.light-mode #prodBar {
+    background: rgba(250, 250, 250, 0.8);
+    color: #1A1A1A;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.20);
+}
+
+body.light-mode #queueTable tr + tr td {
+    border-top: 1px solid rgba(26,26,26,0.20);
+}
+
+body.light-mode #closeBtn {
+    color: #B12222;
+}
