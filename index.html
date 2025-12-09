@@ -12,16 +12,12 @@
     <!-- TABLE CONTENT -->
     <table id="queueTable">
         <thead>
-            <tr>
-                <th>QUEUE</th>
-                <th>WAITING</th>
-                <th>LONGEST</th>
-                <th>AHT</th>
-                <th>ABDN</th>
-            </tr>
+        <tr id="headerRow">
+            <!-- Headers generated dynamically -->
+        </tr>
         </thead>
         <tbody id="queueBody">
-            <!-- Rows generated dynamically -->
+        <!-- Rows generated dynamically -->
         </tbody>
     </table>
 
@@ -45,24 +41,66 @@
                 <button type="button" id="settingsClose" aria-label="Close settings">✕</button>
             </div>
 
+            <!-- Theme + text size (now with separate headings) -->
             <div class="settings-section">
-                <div class="settings-label">Theme</div>
-                <label class="settings-option">
-                    <input type="radio" name="theme" id="themeDark" value="dark">
-                    Dark
-                </label>
-                <label class="settings-option">
-                    <input type="radio" name="theme" id="themeLight" value="light">
-                    Light
-                </label>
-            </div>
+                <div class="settings-subrow">
+                    <div class="settings-label-inline">Theme</div>
+                    <label class="settings-option">
+                        <input type="radio" name="theme" id="themeDark" value="dark">
+                        Dark
+                    </label>
+                    <label class="settings-option">
+                        <input type="radio" name="theme" id="themeLight" value="light">
+                        Light
+                    </label>
+                </div>
 
-            <div class="settings-section">
-                <div class="settings-label">Queues (up to 5)</div>
-                <div id="queueOptions">
-                    <!-- Queue checkboxes populated by app.js -->
+                <div class="settings-subrow">
+                    <div class="settings-label-inline">Text size</div>
+                    <label class="settings-option">
+                        <input type="radio" name="fontSize" id="fontNormal" value="normal">
+                        Normal
+                    </label>
+                    <label class="settings-option">
+                        <input type="radio" name="fontSize" id="fontLarge" value="large">
+                        Large
+                    </label>
                 </div>
             </div>
+
+            <!-- Tabs moved just below theme/size -->
+            <div id="settingsTabs">
+                <button class="settings-tab active" data-tab="queuesTab">Queues</button>
+                <button class="settings-tab" data-tab="metricsTab">Metrics</button>
+            </div>
+
+            <!-- Queues tab -->
+            <div id="queuesTab" class="tab-pane active">
+                <div class="settings-section">
+                    <div class="settings-label">Selected queues (max 5)</div>
+                    <div id="selectedQueuesPills" class="pill-row"></div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-label">Find queues</div>
+                    <input type="text" id="queueSearch" placeholder="Search queues..." autocomplete="off">
+                    <div id="queueList"></div>
+                </div>
+            </div>
+
+            <!-- Metrics tab -->
+            <div id="metricsTab" class="tab-pane">
+                <div class="settings-section">
+                    <div class="settings-label">Selected metrics (max 4)</div>
+                    <div id="selectedMetricsPills" class="pill-row"></div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-label">Available metrics</div>
+                    <div id="metricsGroups"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 

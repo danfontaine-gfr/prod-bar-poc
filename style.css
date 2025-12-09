@@ -44,11 +44,19 @@ html, body {
     border-collapse: collapse;
 }
 
+/* Optional debug grid – uncomment if you want visible cell borders */
+
+#queueTable th,
+#queueTable td {
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+
 #queueTable th {
     padding: 2px 8px;
     font-size: 11px;
     font-weight: 600;
-    opacity: 0.75;
+    opacity: 0.8;
     text-align: left;
 }
 
@@ -59,13 +67,12 @@ html, body {
     font-variant-numeric: tabular-nums;
 }
 
-/* right-align numeric columns (everything except first) */
-#queueTable th:not(:first-child),
-#queueTable td:not(:first-child) {
+/* numeric metric columns – both headers and cells share .metric-col */
+#queueTable .metric-col {
     text-align: right;
 }
 
-/* default row separators (overridden per theme) */
+/* row separators (overridden per theme) */
 #queueTable tr + tr td {
     border-top: 1px solid rgba(255,255,255,0.20);
 }
@@ -107,11 +114,13 @@ html, body {
 
 /* ----- THEMES ----- */
 
-/* Dark mode */
 body.dark-mode #prodBar {
     background: rgba(20, 20, 20, 0.88);
     color: #E6E6E6;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+    /* dual shadow: dark + subtle light outline */
+    box-shadow:
+        0 6px 16px rgba(0,0,0,0.45),
+        0 6px 16px rgba(255,255,255,0.16);
     border: 1px solid rgba(255,255,255,0.06);
 }
 
@@ -127,7 +136,10 @@ body.dark-mode #closeBtn {
 body.light-mode #prodBar {
     background: rgba(250, 250, 250, 0.92);
     color: #1A1A1A;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.20);
+    /* dual shadow: softer dark + light outline */
+    box-shadow:
+        0 6px 14px rgba(0,0,0,0.20),
+        0 6px 14px rgba(255,255,255,0.14);
     border: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -137,6 +149,21 @@ body.light-mode #queueTable tr + tr td {
 
 body.light-mode #closeBtn {
     color: #B12222;
+}
+
+/* ----- FONT SIZE MODES ----- */
+
+body.font-large #prodBar,
+body.font-large #settingsPanel {
+    font-size: 15px;
+}
+
+body.font-large #queueTable th {
+    font-size: 12px;
+}
+
+body.font-large #queueTable td {
+    font-size: 14px;
 }
 
 /* ----- SETTINGS PANEL (SIDE DOCKED) ----- */
@@ -151,7 +178,7 @@ body.light-mode #closeBtn {
 }
 
 #settingsPanel {
-    min-width: 260px;
+    min-width: 280px;
     max-width: 320px;
     padding: 14px 16px;
     border-radius: 10px;
@@ -202,6 +229,45 @@ body.light-mode #closeBtn {
     opacity: 1;
 }
 
+/* Theme/Text size subrows */
+.settings-subrow {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.settings-label-inline {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+    margin-right: 8px;
+    min-width: 70px;
+}
+
+/* Tabs */
+#settingsTabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 14px;    /* more space from theme section */
+    margin-bottom: 2px;  /* tighter to the content below */
+}
+
+.settings-tab {
+    flex: 1;
+    border-radius: 999px;
+    border: none;
+    padding: 4px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: transparent;
+    opacity: 0.7;
+}
+
+.settings-tab.active {
+    opacity: 1;
+}
+
 /* Dark mode panel */
 body.dark-mode #settingsPanel {
     background: rgba(18,18,18,0.96);
@@ -212,6 +278,14 @@ body.dark-mode #settingsPanel {
 
 body.dark-mode #settingsClose {
     color: #E6E6E6;
+}
+
+body.dark-mode .settings-tab {
+    color: #E6E6E6;
+}
+
+body.dark-mode .settings-tab.active {
+    background: rgba(255,255,255,0.08);
 }
 
 /* Light mode panel */
@@ -226,6 +300,14 @@ body.light-mode #settingsClose {
     color: #1A1A1A;
 }
 
+body.light-mode .settings-tab {
+    color: #1A1A1A;
+}
+
+body.light-mode .settings-tab.active {
+    background: rgba(0,0,0,0.06);
+}
+
 .settings-section {
     margin-top: 10px;
     padding-top: 8px;
@@ -237,6 +319,13 @@ body.light-mode #settingsClose {
 
 body.light-mode .settings-section + .settings-section {
     border-top-color: rgba(0,0,0,0.06);
+}
+
+/* First section inside each tab: pull it closer to the tabs and remove border */
+.tab-pane .settings-section:first-child {
+    margin-top: 4px;      /* less gap under tabs */
+    padding-top: 4px;
+    border-top: none;
 }
 
 .settings-label {
@@ -258,19 +347,121 @@ body.light-mode .settings-section + .settings-section {
     margin-right: 4px;
 }
 
-#queueOptions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 10px;
-    margin-top: 4px;
+/* Tab panes */
+.tab-pane {
+    display: none;
 }
 
-#queueOptions label {
+.tab-pane.active {
+    display: block;
+}
+
+/* Queue search + list */
+#queueSearch {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 4px 8px;
     font-size: 12px;
+    outline: none;
+}
+
+body.light-mode #queueSearch {
+    border-color: rgba(0,0,0,0.2);
+}
+
+#queueSearch:focus {
+    border-width: 1px;
+}
+
+/* Scrollable lists */
+#queueList,
+#metricsGroups {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-top: 6px;
+    padding-right: 4px;
+}
+
+/* Queue rows */
+.queue-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 2px 0;
+}
+
+.queue-row label {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
 }
 
-#queueOptions input {
+/* Pills */
+.pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    cursor: default;
+}
+
+.pill button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0;
+}
+
+body.dark-mode .pill {
+    background: rgba(255,255,255,0.08);
+}
+
+body.light-mode .pill {
+    background: rgba(0,0,0,0.06);
+}
+
+/* Pill text / X colors */
+body.dark-mode .pill span,
+body.dark-mode .pill button {
+    color: #E6E6E6;
+}
+
+body.light-mode .pill span,
+body.light-mode .pill button {
+    color: #1A1A1A;
+}
+
+/* Metric groups */
+.metric-group {
+    margin-bottom: 6px;
+}
+
+.metric-group-header {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+
+.metric-option {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    padding: 1px 0;
+}
+
+.metric-option input {
     margin-right: 4px;
 }
