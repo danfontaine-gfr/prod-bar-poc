@@ -21,23 +21,9 @@ html, body {
 
     font-size: 13px;
 
-    -webkit-app-region: no-drag;
-}
-
-/* Drag handle */
-#dragHandle {
     -webkit-app-region: drag;
-    padding: 0 4px;
-    cursor: grab;
-    font-weight: 600;
-    opacity: 0.6;
-    letter-spacing: 0.06em;
-    font-size: 11px;
 }
 
-#dragHandle:hover {
-    opacity: 1;
-}
 
 /* TABLE LAYOUT */
 #queueTable {
@@ -77,19 +63,24 @@ html, body {
     border-top: 1px solid rgba(255,255,255,0.20);
 }
 
-/* Icons block (2 rows, top-right) */
+/* Icons block */
 #barIcons {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-start;
-    gap: 4px;
-    margin-left: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    -webkit-app-region: no-drag;
 }
 
-.icon-row {
-    display: flex;
-    gap: 4px;
+#barIcons.top-controls {
+  top: 6px;
+  right: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0; /* override old spacing */
 }
 
 #barIcons span {
@@ -100,7 +91,13 @@ html, body {
     padding: 2px 4px;
     border-radius: 4px;
 }
-
+/* Make sure icon spans don't wrap or drop */
+#barIcons span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
 #barIcons span:hover {
     opacity: 1;
     background-color: rgba(255,255,255,0.06);
@@ -167,6 +164,14 @@ body.font-large #queueTable td {
 }
 
 /* ----- SETTINGS PANEL (SIDE DOCKED) ----- */
+
+/* Anything interactive must be no-drag when the container is draggable */
+#settingsModal,
+#settingsPanel,
+#settingsPanel * 
+{
+  -webkit-app-region: no-drag;
+}
 
 #settingsModal {
     display: none;      /* toggled via JS */
@@ -464,4 +469,202 @@ body.light-mode .pill button {
 
 .metric-option input {
     margin-right: 4px;
+}
+
+/* Header row above the table */
+/* Stack header above table (not side-by-side) */
+#prodBar {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Header row layout */
+#barHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+/* Top bar layout: 3 zones */
+#topBar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+/* Status */
+#statusArea {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50; /* green for now */
+}
+
+/* Toggle */
+#viewToggle {
+  display: flex;
+  gap: 4px;
+}
+
+.toggle-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.6;
+  background: transparent;
+}
+
+.toggle-btn.active {
+  opacity: 1;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Icons */
+#barIcons {
+  display: flex;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+/* =========================
+   TOP BAR (FINAL)
+   ========================= */
+
+#prodBar {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* top row: status | toggle | icons */
+#topBar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 10px;
+  margin-bottom: 6px;
+  -webkit-app-region: drag;
+}
+
+/* Status */
+#statusArea {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  opacity: 0.8;
+  -webkit-app-region: no-drag;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.connected { background: #3ddc84; }
+
+/* Toggle */
+#viewToggle {
+  display: inline-flex;
+  justify-self: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 999px;
+  -webkit-app-region: no-drag;
+}
+
+.toggle-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  background: transparent;
+  opacity: 0.75;
+}
+
+.toggle-btn.active { opacity: 1; }
+
+/* ===== View Toggle (Queues / Me) ===== */
+
+/* Toggle track */
+body.dark-mode #viewToggle {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+body.light-mode #viewToggle {
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Toggle buttons – inactive */
+body.dark-mode .toggle-btn {
+  color: rgba(255,255,255,0.70);
+}
+
+body.light-mode .toggle-btn {
+  color: rgba(0,0,0,0.70);
+}
+
+/* Toggle buttons – active */
+body.dark-mode .toggle-btn.active {
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.14);
+}
+
+body.light-mode .toggle-btn.active {
+  color: rgba(0,0,0,0.95);
+  background: rgba(0,0,0,0.08);
+}
+
+
+/* Icons */
+#barIcons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+#barIcons span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.75;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+#barIcons span:hover {
+  opacity: 1;
+}
+
+body.dark-mode #barIcons span:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+body.light-mode #barIcons span:hover {
+  background: rgba(0,0,0,0.06);
 }

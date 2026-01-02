@@ -9,6 +9,25 @@
 
 <div id="prodBar">
 
+    <!-- TOP CONTROLS -->
+    <div id="topBar">
+        <div id="statusArea">
+        <span class="status-dot connected"></span>
+        <span class="status-text">CONNECTED</span>
+        </div>
+
+        <div id="viewToggle">
+        <button class="toggle-btn active">QUEUES</button>
+        <button class="toggle-btn">ME</button>
+        </div>
+
+        <div id="barIcons">
+        <span id="collapseBtn">⯈</span>
+        <span id="settingsBtn">⚙</span>
+        <span id="closeBtn">✕</span>
+        </div>
+    </div>
+
     <!-- TABLE CONTENT -->
     <table id="queueTable">
         <thead>
@@ -20,18 +39,6 @@
         <!-- Rows generated dynamically -->
         </tbody>
     </table>
-
-    <!-- Icons / Controls (2x2 grid on the right) -->
-    <div id="barIcons">
-        <div class="icon-row">
-            <span id="dragHandle">⋮⋮</span>
-            <span id="collapseBtn">⯈</span>
-        </div>
-        <div class="icon-row">
-            <span id="settingsBtn">⚙</span>
-            <span id="closeBtn">✕</span>
-        </div>
-    </div>
 
     <!-- Settings Panel (side docked) -->
     <div id="settingsModal">
