@@ -1,25 +1,38 @@
-// ----- Electron IPC (for auto-resize) -----
-let ipcRenderer = null;
-try {
-  ipcRenderer = require('electron').ipcRenderer;
-} catch (e) {
-  // Not running in Electron (safe to ignore)
-}
+// app.js
+//alert("app.js loaded: " + new Date().toISOString());
+
+// ----- Electron bridge (via preload) -----
+// Use window + var so re-evaluation never throws (Electron can reuse the same JS context)
+window.__PROD_BAR_BRIDGE__ =
+  window.__PROD_BAR_BRIDGE__ ||
+  ((typeof window !== "undefined" && window.prodBar) ? window.prodBar : null);
+
+var prodBar = window.__PROD_BAR_BRIDGE__;
+
+let lastSizeSent = { w: 0, h: 0 };
+let resizeRaf = 0;
 
 function resizeToContent() {
-  if (!ipcRenderer) return;
+  if (!prodBar?.resizeWindow) return;
 
-  const rootEl = document.getElementById("prodBar") || document.body;
-  const rect = rootEl.getBoundingClientRect();
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(() => {
+    const rootEl = document.getElementById("prodBar") || document.body;
+    const rect = rootEl.getBoundingClientRect();
 
-  const paddingForShadow = 12; // extra px for right/bottom shadows
+    const paddingForShadow = 12; // extra px for right/bottom shadows
 
-  ipcRenderer.send('resize-window', {
-    width: Math.ceil(rect.width) + paddingForShadow,
-    height: Math.ceil(rect.height) + paddingForShadow
+    const w = Math.ceil(rect.width) + paddingForShadow;
+    const h = Math.ceil(rect.height) + paddingForShadow;
+
+    // Only resize if meaningfully changed (prevents jitter every poll)
+    if (Math.abs(w - lastSizeSent.w) < 2 && Math.abs(h - lastSizeSent.h) < 2)
+      return;
+
+    lastSizeSent = { w, h };
+    prodBar.resizeWindow(w, h);
   });
 }
-
 
 // ----- Data definitions -----
 
@@ -33,7 +46,7 @@ const ALL_QUEUES = [
   "Technical",
   "Spanish Support",
   "After Hours",
-  "New Accounts"
+  "New Accounts",
 ];
 
 // Metric catalog – modeled on Genesys queue stats concepts
@@ -45,7 +58,7 @@ const ALL_METRICS = [
     header: "WAITING",
     group: "Real-time: Queue Observations",
     apiMetric: "oWaiting",
-    formatter: v => (v ?? 0).toString()
+    formatter: (v) => (v ?? 0).toString(),
   },
   {
     id: "interacting",
@@ -53,7 +66,7 @@ const ALL_METRICS = [
     header: "INTERACT",
     group: "Real-time: Queue Observations",
     apiMetric: "oInteracting",
-    formatter: v => (v ?? 0).toString()
+    formatter: (v) => (v ?? 0).toString(),
   },
   {
     id: "onQueueUsers",
@@ -61,7 +74,7 @@ const ALL_METRICS = [
     header: "ON Q AGENTS",
     group: "Real-time: Queue Observations",
     apiMetric: "oOnQueueUsers",
-    formatter: v => (v ?? 0).toString()
+    formatter: (v) => (v ?? 0).toString(),
   },
   {
     id: "offQueueUsers",
@@ -69,7 +82,7 @@ const ALL_METRICS = [
     header: "OFF Q AGENTS",
     group: "Real-time: Queue Observations",
     apiMetric: "oOffQueueUsers",
-    formatter: v => (v ?? 0).toString()
+    formatter: (v) => (v ?? 0).toString(),
   },
   {
     id: "longestWaiting",
@@ -77,7 +90,7 @@ const ALL_METRICS = [
     header: "LONGEST",
     group: "Real-time: Queue Observations",
     apiMetric: "oLongestWaiting",
-    formatter: sec => formatTime(sec ?? 0)
+    formatter: (sec) => formatTime(sec ?? 0),
   },
 
   // Aggregated / performance – like Queue Performance view
@@ -87,7 +100,7 @@ const ALL_METRICS = [
     header: "ASA",
     group: "Performance: Aggregated",
     apiMetric: "asa",
-    formatter: sec => formatTime(sec ?? 0)
+    formatter: (sec) => formatTime(sec ?? 0),
   },
   {
     id: "aht",
@@ -95,7 +108,7 @@ const ALL_METRICS = [
     header: "AHT",
     group: "Performance: Aggregated",
     apiMetric: "aht",
-    formatter: sec => formatTime(sec ?? 0)
+    formatter: (sec) => formatTime(sec ?? 0),
   },
   {
     id: "avgWait",
@@ -103,7 +116,7 @@ const ALL_METRICS = [
     header: "AVG WAIT",
     group: "Performance: Aggregated",
     apiMetric: "avgWait",
-    formatter: sec => formatTime(sec ?? 0)
+    formatter: (sec) => formatTime(sec ?? 0),
   },
   {
     id: "answerPct",
@@ -111,7 +124,7 @@ const ALL_METRICS = [
     header: "ANSWER %",
     group: "Performance: Aggregated",
     apiMetric: "answerPercent",
-    formatter: v => `${v ?? 0}%`
+    formatter: (v) => `${v ?? 0}%`,
   },
   {
     id: "abandonPct",
@@ -119,7 +132,7 @@ const ALL_METRICS = [
     header: "ABANDON %",
     group: "Performance: Aggregated",
     apiMetric: "abandonPercent",
-    formatter: v => `${v ?? 0}%`
+    formatter: (v) => `${v ?? 0}%`,
   },
   {
     id: "serviceLevelPct",
@@ -127,16 +140,16 @@ const ALL_METRICS = [
     header: "SL %",
     group: "Performance: Aggregated",
     apiMetric: "serviceLevelPercent",
-    formatter: v => `${v ?? 0}%`
-  }
+    formatter: (v) => `${v ?? 0}%`,
+  },
 ];
 
-const SELECTED_QUEUES_KEY   = "prodBarSelectedQueues";
-const SELECTED_METRICS_KEY  = "prodBarSelectedMetrics_v2";
-const THEME_KEY             = "prodBarTheme";
-const FONT_SIZE_KEY         = "prodBarFontSize";
+const SELECTED_QUEUES_KEY = "prodBarSelectedQueues";
+const SELECTED_METRICS_KEY = "prodBarSelectedMetrics_v2";
+const THEME_KEY = "prodBarTheme";
+const FONT_SIZE_KEY = "prodBarFontSize";
 
-const MAX_QUEUES  = 5;
+const MAX_QUEUES = 5;
 const MAX_METRICS = 4;
 const DEFAULT_METRICS = ["waiting", "avgWait", "aht", "abandonPct"];
 
@@ -160,7 +173,7 @@ function saveJSON(key, value) {
 }
 
 // ----- Selected queues & metrics -----
-let selectedQueues  = loadJSON(SELECTED_QUEUES_KEY, null);
+let selectedQueues = loadJSON(SELECTED_QUEUES_KEY, null);
 if (!Array.isArray(selectedQueues) || selectedQueues.length === 0) {
   selectedQueues = ALL_QUEUES.slice(0, MAX_QUEUES);
 } else {
@@ -168,60 +181,45 @@ if (!Array.isArray(selectedQueues) || selectedQueues.length === 0) {
 }
 
 let selectedMetrics = loadJSON(SELECTED_METRICS_KEY, null);
-if (!Array.isArray(selectedMetrics) ||
-    selectedMetrics.length < 1 ||
-    selectedMetrics.length > MAX_METRICS) {
+if (
+  !Array.isArray(selectedMetrics) ||
+  selectedMetrics.length < 1 ||
+  selectedMetrics.length > MAX_METRICS
+) {
   selectedMetrics = DEFAULT_METRICS.slice(0, MAX_METRICS);
 } else {
   selectedMetrics = selectedMetrics.slice(0, MAX_METRICS);
 }
 
-// ----- Fake metrics data generator (POC only) -----
-function getFakeQueueMetrics() {
-  return selectedQueues.map(q => ({
-    queue: q,
-    waiting:        Math.floor(Math.random() * 15),
-    interacting:    Math.floor(Math.random() * 10),
-    onQueueUsers:   3 + Math.floor(Math.random() * 15),
-    offQueueUsers:  Math.floor(Math.random() * 5),
-    longestWaiting: Math.floor(Math.random() * 600),
-
-    asa:              10 + Math.floor(Math.random() * 80),
-    aht:             180 + Math.floor(Math.random() * 300),
-    avgWait:          10 + Math.floor(Math.random() * 120),
-    answerPct:        80 + Math.floor(Math.random() * 20),
-    abandonPct:       Math.floor(Math.random() * 16),
-    serviceLevelPct:  70 + Math.floor(Math.random() * 25)
-  }));
-}
-
 function formatTime(sec) {
   const s = Math.max(0, Math.floor(sec || 0));
-  const m = Math.floor(s / 60).toString().padStart(2, "0");
+  const m = Math.floor(s / 60)
+    .toString()
+    .padStart(2, "0");
   const r = (s % 60).toString().padStart(2, "0");
   return `${m}:${r}`;
 }
 
 // ----- DOM refs -----
-const closeBtnEl          = document.getElementById("closeBtn");
-const collapseBtnEl       = document.getElementById("collapseBtn");
-const settingsBtnEl       = document.getElementById("settingsBtn");
-const settingsModalEl     = document.getElementById("settingsModal");
-const settingsCloseEl     = document.getElementById("settingsClose");
-const queueBodyEl         = document.getElementById("queueBody");
-const headerRowEl         = document.getElementById("headerRow");
-const themeDarkEl         = document.getElementById("themeDark");
-const themeLightEl        = document.getElementById("themeLight");
-const fontNormalEl        = document.getElementById("fontNormal");
-const fontLargeEl         = document.getElementById("fontLarge");
-const settingsTabsEl      = document.getElementById("settingsTabs");
-const queueTabEl          = document.getElementById("queuesTab");
-const metricsTabEl        = document.getElementById("metricsTab");
+const closeBtnEl = document.getElementById("closeBtn");
+const collapseBtnEl = document.getElementById("collapseBtn");
+const settingsBtnEl = document.getElementById("settingsBtn");
+const settingsModalEl = document.getElementById("settingsModal");
+const settingsCloseEl = document.getElementById("settingsClose");
+const queueBodyEl = document.getElementById("queueBody");
+const headerRowEl = document.getElementById("headerRow");
+const themeDarkEl = document.getElementById("themeDark");
+const themeLightEl = document.getElementById("themeLight");
+const fontNormalEl = document.getElementById("fontNormal");
+const fontLargeEl = document.getElementById("fontLarge");
+const settingsTabsEl = document.getElementById("settingsTabs");
+const queueTabEl = document.getElementById("queuesTab");
+const metricsTabEl = document.getElementById("metricsTab");
 const selectedQueuesPills = document.getElementById("selectedQueuesPills");
-const queueSearchEl       = document.getElementById("queueSearch");
-const queueListEl         = document.getElementById("queueList");
-const selectedMetricsPills= document.getElementById("selectedMetricsPills");
-const metricsGroupsEl     = document.getElementById("metricsGroups");
+const queueSearchEl = document.getElementById("queueSearch");
+const queueListEl = document.getElementById("queueList");
+const selectedMetricsPills = document.getElementById("selectedMetricsPills");
+const metricsGroupsEl = document.getElementById("metricsGroups");
 
 // ----- Theme handling (dark / light) -----
 let currentTheme = localStorage.getItem(THEME_KEY) || "dark";
@@ -253,7 +251,7 @@ applyFontSize(currentFontSize);
 
 // ----- Table rendering -----
 function getMetricDefById(id) {
-  return ALL_METRICS.find(m => m.id === id);
+  return ALL_METRICS.find((m) => m.id === id);
 }
 
 function renderTableHeaders() {
@@ -264,7 +262,7 @@ function renderTableHeaders() {
   thQueue.textContent = "QUEUE";
   headerRowEl.appendChild(thQueue);
 
-  selectedMetrics.forEach(id => {
+  selectedMetrics.forEach((id) => {
     const def = getMetricDefById(id);
     if (!def) return;
     const th = document.createElement("th");
@@ -278,7 +276,7 @@ function renderTableRows() {
   if (!queueBodyEl) return;
   queueBodyEl.innerHTML = "";
 
-  selectedQueues.forEach(q => {
+  selectedQueues.forEach((q) => {
     const tr = document.createElement("tr");
     tr.dataset.queue = q;
 
@@ -286,7 +284,7 @@ function renderTableRows() {
     tdName.textContent = q;
     tr.appendChild(tdName);
 
-    selectedMetrics.forEach(id => {
+    selectedMetrics.forEach((id) => {
       const td = document.createElement("td");
       td.classList.add("metric-col");
       td.dataset.metric = id;
@@ -300,14 +298,14 @@ function renderTableRows() {
   resizeToContent();
 }
 
-function updateTable() {
-  const metrics = getFakeQueueMetrics();
+function applyMetricsRows(rows) {
+  if (!Array.isArray(rows)) return;
 
-  metrics.forEach(row => {
+  rows.forEach((row) => {
     const tr = document.querySelector(`tr[data-queue="${row.queue}"]`);
     if (!tr) return;
 
-    selectedMetrics.forEach(id => {
+    selectedMetrics.forEach((id) => {
       const def = getMetricDefById(id);
       if (!def) return;
 
@@ -315,26 +313,59 @@ function updateTable() {
       if (!td) return;
 
       const rawVal = row[id];
-      const formatted = def.formatter ? def.formatter(rawVal) : (rawVal ?? "");
-      td.textContent = formatted;
+      td.textContent = def.formatter ? def.formatter(rawVal) : rawVal ?? "";
     });
   });
 
   resizeToContent();
 }
 
-// Initialize table + updates
+function pushConfigToMain() {
+  if (!prodBar?.setStatsConfig) return;
+  prodBar.setStatsConfig({ queues: selectedQueues, metrics: selectedMetrics }).catch(() => {});
+}
+
+// Initialize table
 renderTableHeaders();
 renderTableRows();
-updateTable();
-setInterval(updateTable, 3000);
+resizeToContent();
+
+// Tell main what we want (queues + metrics)
+pushConfigToMain();
+
+// Render latest cached stats (if any)
+if (prodBar?.getLatestStats) {
+  prodBar
+    .getLatestStats()
+    .then(({ data }) => {
+      if (data?.rows) applyMetricsRows(data.rows);
+    })
+    .catch(() => {});
+}
+
+// Subscribe to live updates from main
+if (prodBar?.onStatsUpdated) {
+  prodBar.onStatsUpdated(({ data }) => {
+    if (!data?.rows) return;
+
+    // Guard: only apply if payload matches current selection
+    const sameQueues =
+      Array.isArray(data.queues) && data.queues.join("|") === selectedQueues.join("|");
+    const sameMetrics =
+      Array.isArray(data.metrics) && data.metrics.join("|") === selectedMetrics.join("|");
+
+    if (!sameQueues || !sameMetrics) return;
+
+    applyMetricsRows(data.rows);
+  });
+}
 
 // ----- Settings: Queues UI -----
 function renderSelectedQueuesPills() {
   if (!selectedQueuesPills) return;
   selectedQueuesPills.innerHTML = "";
 
-  selectedQueues.forEach(q => {
+  selectedQueues.forEach((q) => {
     const pill = document.createElement("div");
     pill.className = "pill";
     pill.dataset.queue = q;
@@ -352,7 +383,7 @@ function renderQueueList() {
 
   const filter = (queueSearchEl?.value || "").trim().toLowerCase();
 
-  ALL_QUEUES.forEach(q => {
+  ALL_QUEUES.forEach((q) => {
     if (filter && !q.toLowerCase().includes(filter)) return;
 
     const row = document.createElement("div");
@@ -384,10 +415,12 @@ function addQueue(name) {
   }
   selectedQueues.push(name);
   saveJSON(SELECTED_QUEUES_KEY, selectedQueues);
+
   renderSelectedQueuesPills();
   renderQueueList();
   renderTableRows();
-  updateTable();
+
+  pushConfigToMain();
 }
 
 function removeQueue(name) {
@@ -395,12 +428,14 @@ function removeQueue(name) {
     alert("Please keep at least one queue selected.");
     return;
   }
-  selectedQueues = selectedQueues.filter(q => q !== name);
+  selectedQueues = selectedQueues.filter((q) => q !== name);
   saveJSON(SELECTED_QUEUES_KEY, selectedQueues);
+
   renderSelectedQueuesPills();
   renderQueueList();
   renderTableRows();
-  updateTable();
+
+  pushConfigToMain();
 }
 
 if (queueSearchEl) {
@@ -410,7 +445,7 @@ if (queueSearchEl) {
 }
 
 if (queueListEl) {
-  queueListEl.addEventListener("change", e => {
+  queueListEl.addEventListener("change", (e) => {
     const input = e.target;
     if (!(input instanceof HTMLInputElement)) return;
     if (input.type !== "checkbox") return;
@@ -425,7 +460,7 @@ if (queueListEl) {
 }
 
 if (selectedQueuesPills) {
-  selectedQueuesPills.addEventListener("click", e => {
+  selectedQueuesPills.addEventListener("click", (e) => {
     const btn = e.target;
     if (!(btn instanceof HTMLButtonElement)) return;
     const pill = btn.closest(".pill");
@@ -441,7 +476,7 @@ function renderSelectedMetricsPills() {
   if (!selectedMetricsPills) return;
   selectedMetricsPills.innerHTML = "";
 
-  selectedMetrics.forEach(id => {
+  selectedMetrics.forEach((id) => {
     const def = getMetricDefById(id);
     if (!def) return;
 
@@ -461,12 +496,12 @@ function renderMetricsGroups() {
   metricsGroupsEl.innerHTML = "";
 
   const groups = {};
-  ALL_METRICS.forEach(m => {
+  ALL_METRICS.forEach((m) => {
     if (!groups[m.group]) groups[m.group] = [];
     groups[m.group].push(m);
   });
 
-  Object.keys(groups).forEach(groupName => {
+  Object.keys(groups).forEach((groupName) => {
     const groupDiv = document.createElement("div");
     groupDiv.className = "metric-group";
 
@@ -475,7 +510,7 @@ function renderMetricsGroups() {
     header.textContent = groupName;
     groupDiv.appendChild(header);
 
-    groups[groupName].forEach(m => {
+    groups[groupName].forEach((m) => {
       const row = document.createElement("label");
       row.className = "metric-option";
 
@@ -503,11 +538,13 @@ function addMetric(id) {
   }
   selectedMetrics.push(id);
   saveJSON(SELECTED_METRICS_KEY, selectedMetrics);
+
   renderSelectedMetricsPills();
   renderMetricsGroups();
   renderTableHeaders();
   renderTableRows();
-  updateTable();
+
+  pushConfigToMain();
 }
 
 function removeMetric(id) {
@@ -515,17 +552,19 @@ function removeMetric(id) {
     alert("Please keep at least one metric selected.");
     return;
   }
-  selectedMetrics = selectedMetrics.filter(m => m !== id);
+  selectedMetrics = selectedMetrics.filter((m) => m !== id);
   saveJSON(SELECTED_METRICS_KEY, selectedMetrics);
+
   renderSelectedMetricsPills();
   renderMetricsGroups();
   renderTableHeaders();
   renderTableRows();
-  updateTable();
+
+  pushConfigToMain();
 }
 
 if (metricsGroupsEl) {
-  metricsGroupsEl.addEventListener("change", e => {
+  metricsGroupsEl.addEventListener("change", (e) => {
     const input = e.target;
     if (!(input instanceof HTMLInputElement)) return;
     if (input.type !== "checkbox") return;
@@ -540,7 +579,7 @@ if (metricsGroupsEl) {
 }
 
 if (selectedMetricsPills) {
-  selectedMetricsPills.addEventListener("click", e => {
+  selectedMetricsPills.addEventListener("click", (e) => {
     const btn = e.target;
     if (!(btn instanceof HTMLButtonElement)) return;
     const pill = btn.closest(".pill");
@@ -594,20 +633,20 @@ function toggleSettings() {
 
 // Tabs switching
 if (settingsTabsEl) {
-  settingsTabsEl.addEventListener("click", e => {
+  settingsTabsEl.addEventListener("click", (e) => {
     const btn = e.target;
     if (!(btn instanceof HTMLButtonElement)) return;
 
     const tabName = btn.dataset.tab;
     if (!tabName) return;
 
-    Array.from(settingsTabsEl.querySelectorAll(".settings-tab")).forEach(b => {
+    Array.from(settingsTabsEl.querySelectorAll(".settings-tab")).forEach((b) => {
       b.classList.toggle("active", b === btn);
     });
 
     const panes = {
       queuesTab: queueTabEl,
-      metricsTab: metricsTabEl
+      metricsTab: metricsTabEl,
     };
     Object.entries(panes).forEach(([name, el]) => {
       if (!el) return;
@@ -620,24 +659,24 @@ if (settingsTabsEl) {
 
 // Theme
 if (themeDarkEl) {
-  themeDarkEl.addEventListener("change", e => {
+  themeDarkEl.addEventListener("change", (e) => {
     if (e.target.checked) applyTheme("dark");
   });
 }
 if (themeLightEl) {
-  themeLightEl.addEventListener("change", e => {
+  themeLightEl.addEventListener("change", (e) => {
     if (e.target.checked) applyTheme("light");
   });
 }
 
 // Font size
 if (fontNormalEl) {
-  fontNormalEl.addEventListener("change", e => {
+  fontNormalEl.addEventListener("change", (e) => {
     if (e.target.checked) applyFontSize("normal");
   });
 }
 if (fontLargeEl) {
-  fontLargeEl.addEventListener("change", e => {
+  fontLargeEl.addEventListener("change", (e) => {
     if (e.target.checked) applyFontSize("large");
   });
 }
@@ -651,16 +690,17 @@ if (settingsCloseEl) {
 }
 
 // Close on Escape
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && settingsModalEl.classList.contains("visible")) {
     closeSettings();
   }
 });
 
-// Close button: exits the app
+// Close button: quits the app via main (fallback to window.close)
 if (closeBtnEl) {
   closeBtnEl.addEventListener("click", () => {
-    window.close();
+    if (prodBar?.quitApp) prodBar.quitApp();
+    else window.close();
   });
 }
 
