@@ -22,9 +22,15 @@
         </div>
 
         <div id="barIcons">
-        <span id="collapseBtn">⯈</span>
-        <span id="settingsBtn">⚙</span>
-        <span id="closeBtn">✕</span>
+            <button id="collapseBtn" class="icon-btn" aria-label="Expand">
+                <i data-lucide="maximize-2"></i>
+            </button>
+            <button id="settingsBtn" class="icon-btn" aria-label="Settings">
+                <i data-lucide="settings"></i>
+            </button>
+            <button id="closeBtn" class="icon-btn icon-danger" aria-label="Close">
+                <i data-lucide="x"></i>
+            </button>
         </div>
     </div>
 
@@ -112,7 +118,7 @@
     </div>
 
 </div>
-
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="app.js"></script>
 </body>
 </html>

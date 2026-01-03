@@ -47,7 +47,7 @@ mainWindow.webContents.on("console-message", (_e, level, message, line, sourceId
 });
 
 // open devtools so you can see Network/Sources/Console
-// mainWindow.webContents.openDevTools({ mode: "detach" });
+ mainWindow.webContents.openDevTools({ mode: "detach" });
 
   mainWindow.on("closed", () => {
     mainWindow = null;

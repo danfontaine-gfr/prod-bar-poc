@@ -221,6 +221,12 @@ const queueListEl = document.getElementById("queueList");
 const selectedMetricsPills = document.getElementById("selectedMetricsPills");
 const metricsGroupsEl = document.getElementById("metricsGroups");
 
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+});
+
 // ----- Theme handling (dark / light) -----
 let currentTheme = localStorage.getItem(THEME_KEY) || "dark";
 
