@@ -556,3 +556,36 @@ body.light-mode .pill span,
 body.light-mode .pill button {
   color: #1a1a1a;
 }
+
+/* ==========================================================================
+   Collapsed mode: hide data table (and optionally center/top compact)
+   ========================================================================== */
+
+body.is-collapsed #queueTable {
+  display: none;
+}
+/* Collapsed mode: minimal “title bar” footprint */
+body.is-collapsed #queueTable {
+  display: none;
+}
+
+/* Hide the view toggle to shrink width */
+body.is-collapsed #viewToggle {
+  display: none;
+}
+
+/* Tighten vertical spacing */
+body.is-collapsed #prodBar {
+  padding: 4px 8px;
+  gap: 0;
+  min-width: 150px; /* keeps it from becoming a tiny mystery blob */
+}
+
+body.is-collapsed #topBar {
+  margin-bottom: 0;
+}
+
+/* Optional: show only the dot (no CONNECTED text) for maximum compactness */
+body.is-collapsed #statusArea .status-text {
+  display: none;
+}

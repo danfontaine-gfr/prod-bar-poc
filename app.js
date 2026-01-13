@@ -147,6 +147,10 @@ const SELECTED_QUEUES_KEY = "prodBarSelectedQueues";
 const SELECTED_METRICS_KEY = "prodBarSelectedMetrics_v2";
 const THEME_KEY = "prodBarTheme";
 const FONT_SIZE_KEY = "prodBarFontSize";
+const COLLAPSE_KEY = "prodBarCollapsed";
+
+const saved = localStorage.getItem(COLLAPSE_KEY);
+let isCollapsed = saved === "true"; // null/undefined/anything else => expanded
 
 const MAX_QUEUES = 5;
 const MAX_METRICS = 4;
@@ -255,6 +259,30 @@ function applyFontSize(size) {
 // Initialize theme + font size
 applyTheme(currentTheme);
 applyFontSize(currentFontSize);
+
+// ----- Collapse/Expand handling -----
+isCollapsed = localStorage.getItem(COLLAPSE_KEY) === "true";
+
+function setCollapseIcon(collapsed) {
+  if (!collapseBtnEl) return;
+
+  // Recreate the <i> node because Lucide converts it to <svg>
+  const iconName = collapsed ? "maximize-2" : "minimize-2";
+  collapseBtnEl.innerHTML = `<i data-lucide="${iconName}"></i>`;
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function applyCollapsedState(collapsed) {
+  isCollapsed = !!collapsed;
+  document.body.classList.toggle("is-collapsed", isCollapsed);
+  localStorage.setItem(COLLAPSE_KEY, String(isCollapsed));
+  setCollapseIcon(isCollapsed);
+  resizeToContent();
+}
+
+// Initialize collapsed/expanded
+applyCollapsedState(isCollapsed);
 
 // ----- Table rendering -----
 function getMetricDefById(id) {
@@ -707,6 +735,7 @@ if (closeBtnEl) {
 // Collapse button: placeholder for future pill-mode
 if (collapseBtnEl) {
   collapseBtnEl.addEventListener("click", () => {
-    console.log("Collapse clicked (to be implemented)");
+    applyCollapsedState(!isCollapsed);
   });
 }
+
