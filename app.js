@@ -1,14 +1,15 @@
 // app.js
-//alert("app.js loaded: " + new Date().toISOString());
+// alert("app.js loaded: " + new Date().toISOString());
 
 // ----- Electron bridge (via preload) -----
 // Use window + var so re-evaluation never throws (Electron can reuse the same JS context)
 window.__PROD_BAR_BRIDGE__ =
   window.__PROD_BAR_BRIDGE__ ||
-  ((typeof window !== "undefined" && window.prodBar) ? window.prodBar : null);
+  (typeof window !== "undefined" && window.prodBar ? window.prodBar : null);
 
 var prodBar = window.__PROD_BAR_BRIDGE__;
 
+// ----- Resize-to-content (renderer -> main) -----
 let lastSizeSent = { w: 0, h: 0 };
 let resizeRaf = 0;
 
@@ -21,13 +22,11 @@ function resizeToContent() {
     const rect = rootEl.getBoundingClientRect();
 
     const paddingForShadow = 12; // extra px for right/bottom shadows
-
     const w = Math.ceil(rect.width) + paddingForShadow;
     const h = Math.ceil(rect.height) + paddingForShadow;
 
     // Only resize if meaningfully changed (prevents jitter every poll)
-    if (Math.abs(w - lastSizeSent.w) < 2 && Math.abs(h - lastSizeSent.h) < 2)
-      return;
+    if (Math.abs(w - lastSizeSent.w) < 2 && Math.abs(h - lastSizeSent.h) < 2) return;
 
     lastSizeSent = { w, h };
     prodBar.resizeWindow(w, h);
@@ -35,7 +34,6 @@ function resizeToContent() {
 }
 
 // ----- Data definitions -----
-
 const ALL_QUEUES = [
   "Support",
   "Sales",
@@ -144,6 +142,7 @@ const ALL_METRICS = [
   },
 ];
 
+// ----- Storage keys + defaults -----
 const SELECTED_QUEUES_KEY = "prodBarSelectedQueues";
 const SELECTED_METRICS_KEY = "prodBarSelectedMetrics_v2";
 const THEME_KEY = "prodBarTheme";
@@ -172,6 +171,13 @@ function saveJSON(key, value) {
   }
 }
 
+function formatTime(sec) {
+  const s = Math.max(0, Math.floor(sec || 0));
+  const m = Math.floor(s / 60).toString().padStart(2, "0");
+  const r = (s % 60).toString().padStart(2, "0");
+  return `${m}:${r}`;
+}
+
 // ----- Selected queues & metrics -----
 let selectedQueues = loadJSON(SELECTED_QUEUES_KEY, null);
 if (!Array.isArray(selectedQueues) || selectedQueues.length === 0) {
@@ -191,40 +197,35 @@ if (
   selectedMetrics = selectedMetrics.slice(0, MAX_METRICS);
 }
 
-function formatTime(sec) {
-  const s = Math.max(0, Math.floor(sec || 0));
-  const m = Math.floor(s / 60)
-    .toString()
-    .padStart(2, "0");
-  const r = (s % 60).toString().padStart(2, "0");
-  return `${m}:${r}`;
-}
-
 // ----- DOM refs -----
 const closeBtnEl = document.getElementById("closeBtn");
 const collapseBtnEl = document.getElementById("collapseBtn");
 const settingsBtnEl = document.getElementById("settingsBtn");
 const settingsModalEl = document.getElementById("settingsModal");
 const settingsCloseEl = document.getElementById("settingsClose");
+
 const queueBodyEl = document.getElementById("queueBody");
 const headerRowEl = document.getElementById("headerRow");
+
 const themeDarkEl = document.getElementById("themeDark");
 const themeLightEl = document.getElementById("themeLight");
 const fontNormalEl = document.getElementById("fontNormal");
 const fontLargeEl = document.getElementById("fontLarge");
+
 const settingsTabsEl = document.getElementById("settingsTabs");
 const queueTabEl = document.getElementById("queuesTab");
 const metricsTabEl = document.getElementById("metricsTab");
+
 const selectedQueuesPills = document.getElementById("selectedQueuesPills");
 const queueSearchEl = document.getElementById("queueSearch");
 const queueListEl = document.getElementById("queueList");
+
 const selectedMetricsPills = document.getElementById("selectedMetricsPills");
 const metricsGroupsEl = document.getElementById("metricsGroups");
 
+// Lucide: create icons after DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+  if (window.lucide) window.lucide.createIcons();
 });
 
 // ----- Theme handling (dark / light) -----
@@ -271,6 +272,7 @@ function renderTableHeaders() {
   selectedMetrics.forEach((id) => {
     const def = getMetricDefById(id);
     if (!def) return;
+
     const th = document.createElement("th");
     th.classList.add("metric-col");
     th.textContent = def.header || def.label;
@@ -361,7 +363,6 @@ if (prodBar?.onStatsUpdated) {
       Array.isArray(data.metrics) && data.metrics.join("|") === selectedMetrics.join("|");
 
     if (!sameQueues || !sameMetrics) return;
-
     applyMetricsRows(data.rows);
   });
 }
@@ -419,6 +420,7 @@ function addQueue(name) {
     alert(`You can select up to ${MAX_QUEUES} queues.`);
     return;
   }
+
   selectedQueues.push(name);
   saveJSON(SELECTED_QUEUES_KEY, selectedQueues);
 
@@ -434,6 +436,7 @@ function removeQueue(name) {
     alert("Please keep at least one queue selected.");
     return;
   }
+
   selectedQueues = selectedQueues.filter((q) => q !== name);
   saveJSON(SELECTED_QUEUES_KEY, selectedQueues);
 
@@ -445,9 +448,7 @@ function removeQueue(name) {
 }
 
 if (queueSearchEl) {
-  queueSearchEl.addEventListener("input", () => {
-    renderQueueList();
-  });
+  queueSearchEl.addEventListener("input", () => renderQueueList());
 }
 
 if (queueListEl) {
@@ -457,11 +458,8 @@ if (queueListEl) {
     if (input.type !== "checkbox") return;
 
     const q = input.value;
-    if (input.checked) {
-      addQueue(q);
-    } else {
-      removeQueue(q);
-    }
+    if (input.checked) addQueue(q);
+    else removeQueue(q);
   });
 }
 
@@ -469,10 +467,13 @@ if (selectedQueuesPills) {
   selectedQueuesPills.addEventListener("click", (e) => {
     const btn = e.target;
     if (!(btn instanceof HTMLButtonElement)) return;
+
     const pill = btn.closest(".pill");
     if (!pill) return;
+
     const q = pill.dataset.queue;
     if (!q) return;
+
     removeQueue(q);
   });
 }
@@ -523,6 +524,7 @@ function renderMetricsGroups() {
       const input = document.createElement("input");
       input.type = "checkbox";
       input.value = m.id;
+
       const isSelected = selectedMetrics.includes(m.id);
       input.checked = isSelected;
       input.disabled = !isSelected && selectedMetrics.length >= MAX_METRICS;
@@ -542,6 +544,7 @@ function addMetric(id) {
     alert(`You can select up to ${MAX_METRICS} metrics.`);
     return;
   }
+
   selectedMetrics.push(id);
   saveJSON(SELECTED_METRICS_KEY, selectedMetrics);
 
@@ -558,6 +561,7 @@ function removeMetric(id) {
     alert("Please keep at least one metric selected.");
     return;
   }
+
   selectedMetrics = selectedMetrics.filter((m) => m !== id);
   saveJSON(SELECTED_METRICS_KEY, selectedMetrics);
 
@@ -576,11 +580,8 @@ if (metricsGroupsEl) {
     if (input.type !== "checkbox") return;
 
     const id = input.value;
-    if (input.checked) {
-      addMetric(id);
-    } else {
-      removeMetric(id);
-    }
+    if (input.checked) addMetric(id);
+    else removeMetric(id);
   });
 }
 
@@ -588,10 +589,13 @@ if (selectedMetricsPills) {
   selectedMetricsPills.addEventListener("click", (e) => {
     const btn = e.target;
     if (!(btn instanceof HTMLButtonElement)) return;
+
     const pill = btn.closest(".pill");
     if (!pill) return;
+
     const id = pill.dataset.metric;
     if (!id) return;
+
     removeMetric(id);
   });
 }
@@ -630,11 +634,8 @@ function closeSettings() {
 }
 
 function toggleSettings() {
-  if (settingsModalEl.classList.contains("visible")) {
-    closeSettings();
-  } else {
-    openSettings();
-  }
+  if (settingsModalEl.classList.contains("visible")) closeSettings();
+  else openSettings();
 }
 
 // Tabs switching
@@ -650,10 +651,7 @@ if (settingsTabsEl) {
       b.classList.toggle("active", b === btn);
     });
 
-    const panes = {
-      queuesTab: queueTabEl,
-      metricsTab: metricsTabEl,
-    };
+    const panes = { queuesTab: queueTabEl, metricsTab: metricsTabEl };
     Object.entries(panes).forEach(([name, el]) => {
       if (!el) return;
       el.classList.toggle("active", name === tabName);
@@ -688,12 +686,8 @@ if (fontLargeEl) {
 }
 
 // Open/close settings
-if (settingsBtnEl) {
-  settingsBtnEl.addEventListener("click", toggleSettings);
-}
-if (settingsCloseEl) {
-  settingsCloseEl.addEventListener("click", closeSettings);
-}
+if (settingsBtnEl) settingsBtnEl.addEventListener("click", toggleSettings);
+if (settingsCloseEl) settingsCloseEl.addEventListener("click", closeSettings);
 
 // Close on Escape
 document.addEventListener("keydown", (e) => {

@@ -1,601 +1,82 @@
-/* Reset & base */
-html, body {
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    overflow: hidden;        /* never show scrollbars */
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-}
-
-/* Floating bar container: size driven by content */
-#prodBar {
-    position: relative;
-    display: inline-flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 8px;
-
-    margin: 4px;           /* space so shadow isn't clipped */
-    padding: 6px 12px;
-    border-radius: 8px;
-
-    font-size: 13px;
-
-    -webkit-app-region: drag;
-}
-
-
-/* TABLE LAYOUT */
-#queueTable {
-    border-collapse: collapse;
-}
-
-/* Optional debug grid – uncomment if you want visible cell borders */
-
-#queueTable th,
-#queueTable td {
-    border: 1px solid rgba(255,255,255,0.25);
-}
-
-
-#queueTable th {
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    opacity: 0.8;
-    text-align: left;
-}
-
-#queueTable td {
-    padding: 2px 8px;
-    font-size: 13px;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-}
-
-/* numeric metric columns – both headers and cells share .metric-col */
-#queueTable .metric-col {
-    text-align: right;
-}
-
-/* row separators (overridden per theme) */
-#queueTable tr + tr td {
-    border-top: 1px solid rgba(255,255,255,0.20);
-}
-
-/* Icons block */
-#barIcons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    -webkit-app-region: no-drag;
-}
-
-#barIcons.top-controls {
-  top: 6px;
-  right: 8px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  margin-left: 0; /* override old spacing */
-}
-
-#barIcons span {
-    cursor: pointer;
-    opacity: 0.75;
-    font-size: 14px;
-    line-height: 1;
-    padding: 2px 4px;
-    border-radius: 4px;
-}
-/* Make sure icon spans don't wrap or drop */
-#barIcons span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-}
-#barIcons span:hover {
-    opacity: 1;
-    background-color: rgba(255,255,255,0.06);
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-app-region: no-drag;
-}
-
-.icon-btn svg {
-  width: 16px;
-  height: 16px;
-  pointer-events: none; /* click stays on button */
-}
-
-/* ===== Lucide icon visibility ===== */
-.icon-btn {
-  color: inherit;            /* SVG uses currentColor */
-  opacity: 0.8;
-}
-
-.icon-btn:hover {
-  opacity: 1;
-}
-
-/* Dark mode icon color */
-body.dark-mode .icon-btn {
-  color: rgba(255,255,255,0.78);
-}
-
-/* Light mode icon color */
-body.light-mode .icon-btn {
-  color: rgba(0,0,0,0.72);
-}
-
-/* Close stays red */
-.icon-btn.icon-danger {
-  color: #FF8888; /* or whatever you prefer */
-}
-body.light-mode .icon-btn.icon-danger {
-  color: #B12222;
-}
-
-/* ----- THEMES ----- */
-
-body.dark-mode #prodBar {
-    background: rgba(20, 20, 20, 0.88);
-    color: #E6E6E6;
-    /* dual shadow: dark + subtle light outline */
-    box-shadow:
-        0 6px 16px rgba(0,0,0,0.45),
-        0 6px 16px rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.06);
-}
-
-body.dark-mode #queueTable tr + tr td {
-    border-top: 1px solid rgba(230,230,230,0.16);
-}
-
-body.dark-mode #closeBtn {
-    color: #FF8888;
-}
-
-/* Light mode */
-body.light-mode #prodBar {
-    background: rgba(250, 250, 250, 0.92);
-    color: #1A1A1A;
-    /* dual shadow: softer dark + light outline */
-    box-shadow:
-        0 6px 14px rgba(0,0,0,0.20),
-        0 6px 14px rgba(255,255,255,0.14);
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-body.light-mode #queueTable tr + tr td {
-    border-top: 1px solid rgba(26,26,26,0.18);
-}
-
-body.light-mode #closeBtn {
-    color: #B12222;
-}
-
-/* ----- FONT SIZE MODES ----- */
-
-body.font-large #prodBar,
-body.font-large #settingsPanel {
-    font-size: 15px;
-}
-
-body.font-large #queueTable th {
-    font-size: 12px;
-}
-
-body.font-large #queueTable td {
-    font-size: 14px;
-}
-
-/* ----- SETTINGS PANEL (SIDE DOCKED) ----- */
-
-/* Anything interactive must be no-drag when the container is draggable */
-#settingsModal,
-#settingsPanel,
-#settingsPanel * 
-{
-  -webkit-app-region: no-drag;
-}
-
-#settingsModal {
-    display: none;      /* toggled via JS */
-    margin-left: 10px;  /* gap between bar and panel */
-}
-
-#settingsModal.visible {
-    display: block;
-}
-
-#settingsPanel {
-    min-width: 280px;
-    max-width: 320px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    box-shadow: 0 10px 26px rgba(0,0,0,0.65);
-    border: 1px solid rgba(255,255,255,0.06);
-    transform: translateX(4px);
-    opacity: 0;
-    transition:
-        opacity 130ms ease-out,
-        transform 130ms ease-out;
-}
-
-/* animate in when visible */
-#settingsModal.visible #settingsPanel {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-/* Header in settings panel */
-#settingsHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-#settingsHeader h3 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-/* X button in settings header */
-#settingsClose {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    padding: 0 0 0 8px;
-    opacity: 0.7;
-}
-
-#settingsClose:hover {
-    opacity: 1;
-}
-
-/* Theme/Text size subrows */
-.settings-subrow {
-    display: flex;
-    align-items: center;
-    margin-bottom: 4px;
-}
-
-.settings-label-inline {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.8;
-    margin-right: 8px;
-    min-width: 70px;
-}
-
-/* Tabs */
-#settingsTabs {
-    display: flex;
-    gap: 4px;
-    margin-top: 14px;    /* more space from theme section */
-    margin-bottom: 2px;  /* tighter to the content below */
-}
-
-.settings-tab {
-    flex: 1;
-    border-radius: 999px;
-    border: none;
-    padding: 4px 6px;
-    font-size: 12px;
-    cursor: pointer;
-    background: transparent;
-    opacity: 0.7;
-}
-
-.settings-tab.active {
-    opacity: 1;
-}
-
-/* Dark mode panel */
-body.dark-mode #settingsPanel {
-    background: rgba(18,18,18,0.96);
-    color: #E6E6E6;
-    border-color: rgba(255,255,255,0.08);
-    backdrop-filter: blur(12px);
-}
-
-body.dark-mode #settingsClose {
-    color: #E6E6E6;
-}
-
-body.dark-mode .settings-tab {
-    color: #E6E6E6;
-}
-
-body.dark-mode .settings-tab.active {
-    background: rgba(255,255,255,0.08);
-}
-
-/* Light mode panel */
-body.light-mode #settingsPanel {
-    background: rgba(252,252,252,0.98);
-    color: #1A1A1A;
-    border-color: rgba(0,0,0,0.06);
-    backdrop-filter: blur(12px);
-}
-
-body.light-mode #settingsClose {
-    color: #1A1A1A;
-}
-
-body.light-mode .settings-tab {
-    color: #1A1A1A;
-}
-
-body.light-mode .settings-tab.active {
-    background: rgba(0,0,0,0.06);
-}
-
-.settings-section {
-    margin-top: 10px;
-    padding-top: 8px;
-}
-
-.settings-section + .settings-section {
-    border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-body.light-mode .settings-section + .settings-section {
-    border-top-color: rgba(0,0,0,0.06);
-}
-
-/* First section inside each tab: pull it closer to the tabs and remove border */
-.tab-pane .settings-section:first-child {
-    margin-top: 4px;      /* less gap under tabs */
-    padding-top: 4px;
-    border-top: none;
-}
-
-.settings-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.8;
-    margin-bottom: 4px;
-}
-
-.settings-option {
-    display: inline-flex;
-    align-items: center;
-    margin-right: 10px;
-    font-size: 13px;
-}
-
-.settings-option input {
-    margin-right: 4px;
-}
-
-/* Tab panes */
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-}
-
-/* Queue search + list */
-#queueSearch {
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.2);
-    padding: 4px 8px;
-    font-size: 12px;
-    outline: none;
-}
-
-body.light-mode #queueSearch {
-    border-color: rgba(0,0,0,0.2);
-}
-
-#queueSearch:focus {
-    border-width: 1px;
-}
-
-/* Scrollable lists */
-#queueList,
-#metricsGroups {
-    max-height: 150px;
-    overflow-y: auto;
-    margin-top: 6px;
-    padding-right: 4px;
-}
-
-/* Queue rows */
-.queue-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12px;
-    padding: 2px 0;
-}
-
-.queue-row label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-/* Pills */
-.pill-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    border-radius: 999px;
-    font-size: 11px;
-    cursor: default;
-}
-
-.pill button {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 11px;
-    padding: 0;
-}
-
-body.dark-mode .pill {
-    background: rgba(255,255,255,0.08);
-}
-
-body.light-mode .pill {
-    background: rgba(0,0,0,0.06);
-}
-
-/* Pill text / X colors */
-body.dark-mode .pill span,
-body.dark-mode .pill button {
-    color: #E6E6E6;
-}
-
-body.light-mode .pill span,
-body.light-mode .pill button {
-    color: #1A1A1A;
-}
-
-/* Metric groups */
-.metric-group {
-    margin-bottom: 6px;
-}
-
-.metric-group-header {
-    font-size: 11px;
-    font-weight: 600;
-    opacity: 0.8;
-    margin-bottom: 2px;
-}
-
-.metric-option {
-    display: flex;
-    align-items: center;
-    font-size: 12px;
-    padding: 1px 0;
-}
-
-.metric-option input {
-    margin-right: 4px;
-}
-
-/* Header row above the table */
-/* Stack header above table (not side-by-side) */
-#prodBar {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-/* Header row layout */
-#barHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-/* Top bar layout: 3 zones */
-#topBar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  column-gap: 10px;
-  -webkit-app-region: no-drag;
-}
-
-/* Status */
-#statusArea {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4CAF50; /* green for now */
-}
-
-/* Toggle */
-#viewToggle {
-  display: flex;
-  gap: 4px;
-}
-
-.toggle-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 11px;
-  cursor: pointer;
-  opacity: 0.6;
+/* ==========================================================================
+   Floating Productivity Bar (Electron) — style.css
+   Refactor focus: remove duplicates/dead rules, consolidate top bar styles,
+   and lock typography to Normal + Large (via CSS variables).
+   ========================================================================== */
+
+/* ----- Base / reset ----- */
+:root {
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Typography scale (Normal) */
+  --fs-base: 13px;          /* base text (bar + table cells) */
+  --fs-th: 11px;            /* table headers + small labels */
+  --fs-td: 13px;            /* table body cells */
+  --fs-ui: 12px;            /* inputs/list rows/options */
+  --fs-pill: 11px;          /* pill chips */
+  --fs-panel-title: 14px;   /* Settings title + close */
+
+  /* Spacing + shape */
+  --bar-gap: 8px;
+  --bar-padding-y: 6px;
+  --bar-padding-x: 12px;
+  --bar-radius: 8px;
+
+  /* Icons */
+  --icon-size: 16px;
+
+  /* Panel */
+  --panel-min: 280px;
+  --panel-max: 320px;
+  --panel-radius: 10px;
+}
+
+body.font-large {
+  /* Typography scale (Large) */
+  --fs-base: 15px;
+  --fs-th: 12px;
+  --fs-td: 14px;
+  --fs-ui: 13px;
+  --fs-pill: 12px;
+  --fs-panel-title: 15px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
   background: transparent;
+  overflow: hidden; /* never show scrollbars */
+  font-family: var(--font-family);
 }
 
-.toggle-btn.active {
-  opacity: 1;
-  background: rgba(255,255,255,0.08);
-}
-
-/* Icons */
-#barIcons {
-  display: flex;
-  gap: 6px;
-  -webkit-app-region: no-drag;
-}
-/* =========================
-   TOP BAR (FINAL)
-   ========================= */
-
+/* ----- App container (size driven by content) ----- */
 #prodBar {
+  position: relative;
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: column; /* top bar above table */
   align-items: stretch;
+  gap: var(--bar-gap);
+
+  margin: 4px; /* space so shadow isn't clipped */
+  padding: var(--bar-padding-y) var(--bar-padding-x);
+  border-radius: var(--bar-radius);
+
+  font-size: var(--fs-base);
+
+  -webkit-app-region: drag;
 }
 
-/* top row: status | toggle | icons */
+/* ==========================================================================
+   Top bar (status | toggle | icons)
+   ========================================================================== */
 #topBar {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   column-gap: 10px;
   margin-bottom: 6px;
+
   -webkit-app-region: drag;
 }
 
@@ -604,8 +85,10 @@ body.light-mode .pill button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+
+  font-size: var(--fs-th);
   opacity: 0.8;
+
   -webkit-app-region: no-drag;
 }
 
@@ -616,15 +99,18 @@ body.light-mode .pill button {
   display: inline-block;
 }
 
-.status-dot.connected { background: #3ddc84; }
+.status-dot.connected {
+  background: #3ddc84;
+}
 
-/* Toggle */
+/* View toggle */
 #viewToggle {
   display: inline-flex;
   justify-self: center;
   gap: 4px;
   padding: 2px;
   border-radius: 999px;
+
   -webkit-app-region: no-drag;
 }
 
@@ -632,47 +118,15 @@ body.light-mode .pill button {
   border: none;
   border-radius: 999px;
   padding: 3px 10px;
-  font-size: 11px;
+  font-size: var(--fs-th);
   cursor: pointer;
   background: transparent;
   opacity: 0.75;
 }
 
-.toggle-btn.active { opacity: 1; }
-
-/* ===== View Toggle (Queues / Me) ===== */
-
-/* Toggle track */
-body.dark-mode #viewToggle {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
+.toggle-btn.active {
+  opacity: 1;
 }
-
-body.light-mode #viewToggle {
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.08);
-}
-
-/* Toggle buttons – inactive */
-body.dark-mode .toggle-btn {
-  color: rgba(255,255,255,0.70);
-}
-
-body.light-mode .toggle-btn {
-  color: rgba(0,0,0,0.70);
-}
-
-/* Toggle buttons – active */
-body.dark-mode .toggle-btn.active {
-  color: rgba(255,255,255,0.85);
-  background: rgba(255,255,255,0.14);
-}
-
-body.light-mode .toggle-btn.active {
-  color: rgba(0,0,0,0.95);
-  background: rgba(0,0,0,0.08);
-}
-
 
 /* Icons */
 #barIcons {
@@ -680,30 +134,425 @@ body.light-mode .toggle-btn.active {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+
   -webkit-app-region: no-drag;
 }
 
-#barIcons span {
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  opacity: 0.75;
-  font-size: 14px;
-  line-height: 1;
-  padding: 2px 4px;
-  border-radius: 4px;
-  white-space: nowrap;
+
+  color: inherit; /* SVG uses currentColor */
+  opacity: 0.8;
+
+  -webkit-app-region: no-drag;
 }
 
-#barIcons span:hover {
+.icon-btn:hover {
   opacity: 1;
 }
 
-body.dark-mode #barIcons span:hover {
-  background: rgba(255,255,255,0.06);
+.icon-btn svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  pointer-events: none; /* click stays on button */
 }
 
-body.light-mode #barIcons span:hover {
-  background: rgba(0,0,0,0.06);
+/* Close stays red */
+.icon-btn.icon-danger { color: #d64545; opacity: 0.85; }
+.icon-btn.icon-danger:hover { opacity: 1; }
+
+/* ==========================================================================
+   Table
+   ========================================================================== */
+#queueTable {
+  border-collapse: collapse;
+}
+
+#queueTable th,
+#queueTable td {
+  border: none;
+}
+
+#queueTable thead th {
+  border-bottom: 1px solid var(--table-divider);
+}
+
+#queueTable tbody tr + tr td {
+  border-top: 1px solid var(--table-divider);
+}
+
+#queueTable th {
+  padding: 2px 8px;
+  font-size: var(--fs-th);
+  font-weight: 600;
+  opacity: 0.8;
+  text-align: left;
+}
+
+#queueTable td {
+  padding: 2px 8px;
+  font-size: var(--fs-td);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+#queueTable .metric-col {
+  text-align: right;
+}
+
+/* ==========================================================================
+   Themes
+   ========================================================================== */
+body.dark-mode #prodBar {
+  background: rgba(20, 20, 20, 0.88);
+  color: #e6e6e6;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 6px 16px rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode #queueTable tr + tr td {
+  border-top: 1px solid rgba(230, 230, 230, 0.16);
+}
+
+body.light-mode #prodBar {
+  background: rgba(250, 250, 250, 0.92);
+  color: #1a1a1a;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2), 0 6px 14px rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode #queueTable tr + tr td {
+  border-top: 1px solid rgba(26, 26, 26, 0.18);
+}
+
+/* View Toggle track + states */
+body.dark-mode #viewToggle {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.light-mode #viewToggle {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .toggle-btn {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.light-mode .toggle-btn {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .toggle-btn.active {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+body.light-mode .toggle-btn.active {
+  color: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode { --table-divider: rgba(255, 255, 255, 0.14); }
+body.light-mode { --table-divider: rgba(0, 0, 0, 0.14); }
+
+/* ==========================================================================
+   Settings panel (side docked)
+   ========================================================================== */
+#settingsModal,
+#settingsPanel,
+#settingsPanel * {
+  -webkit-app-region: no-drag;
+}
+
+#settingsModal {
+  display: none; /* toggled via JS */
+  margin-left: 10px; /* gap between bar and panel */
+}
+
+#settingsModal.visible {
+  display: block;
+}
+
+#settingsPanel {
+  min-width: var(--panel-min);
+  max-width: var(--panel-max);
+  padding: 14px 16px;
+  border-radius: var(--panel-radius);
+  font-size: var(--fs-base);
+
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  transform: translateX(4px);
+  opacity: 0;
+  transition: opacity 130ms ease-out, transform 130ms ease-out;
+}
+
+#settingsModal.visible #settingsPanel {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#settingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+#settingsHeader h3 {
+  margin: 0;
+  font-size: var(--fs-panel-title);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#settingsClose {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--fs-panel-title);
+  line-height: 1;
+  padding: 0 0 0 8px;
+  opacity: 0.7;
+}
+
+#settingsClose:hover {
+  opacity: 1;
+}
+
+/* Theme/Text size subrows */
+.settings-subrow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.settings-label-inline {
+  font-size: var(--fs-th);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  margin-right: 8px;
+  min-width: 70px;
+}
+
+.settings-option {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  font-size: var(--fs-ui);
+}
+
+.settings-option input {
+  margin-right: 4px;
+}
+
+/* Tabs */
+#settingsTabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+
+.settings-tab {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 4px 6px;
+  font-size: var(--fs-ui);
+  cursor: pointer;
+  background: transparent;
+  opacity: 0.7;
+}
+
+.settings-tab.active {
+  opacity: 1;
+}
+
+/* Tab panes */
+.tab-pane {
+  display: none;
+}
+.tab-pane.active {
+  display: block;
+}
+
+.settings-section {
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.settings-section + .settings-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.light-mode .settings-section + .settings-section {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.tab-pane .settings-section:first-child {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: none;
+}
+
+.settings-label {
+  font-size: var(--fs-th);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+/* Queue search + list */
+#queueSearch {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  font-size: var(--fs-ui);
+  outline: none;
+}
+
+body.light-mode #queueSearch {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+#queueSearch:focus {
+  border-width: 1px;
+}
+
+/* Scrollable lists */
+#queueList,
+#metricsGroups {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 6px;
+  padding-right: 4px;
+}
+
+/* Queue rows */
+.queue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-ui);
+  padding: 2px 0;
+}
+
+.queue-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Pills */
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: var(--fs-pill);
+  cursor: default;
+}
+
+.pill button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--fs-pill);
+  padding: 0;
+}
+
+/* Metric groups */
+.metric-group {
+  margin-bottom: 6px;
+}
+
+.metric-group-header {
+  font-size: var(--fs-th);
+  font-weight: 600;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.metric-option {
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-ui);
+  padding: 1px 0;
+}
+
+.metric-option input {
+  margin-right: 4px;
+}
+
+/* Panel theming */
+body.dark-mode #settingsPanel {
+  background: rgba(18, 18, 18, 0.96);
+  color: #e6e6e6;
+  border-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+body.dark-mode #settingsClose,
+body.dark-mode .settings-tab {
+  color: #e6e6e6;
+}
+
+body.dark-mode .settings-tab.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .pill {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .pill span,
+body.dark-mode .pill button {
+  color: #e6e6e6;
+}
+
+body.light-mode #settingsPanel {
+  background: rgba(252, 252, 252, 0.98);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+body.light-mode #settingsClose,
+body.light-mode .settings-tab {
+  color: #1a1a1a;
+}
+
+body.light-mode .settings-tab.active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .pill {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .pill span,
+body.light-mode .pill button {
+  color: #1a1a1a;
 }
