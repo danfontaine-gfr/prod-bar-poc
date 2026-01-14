@@ -89,7 +89,7 @@ body {
   font-size: var(--fs-th);
   opacity: 0.8;
 
-  -webkit-app-region: no-drag;
+  -webkit-app-region: drag;
 }
 
 .status-dot {
@@ -164,7 +164,7 @@ body {
 }
 
 /* Close stays red */
-.icon-btn.icon-danger { color: #d64545; opacity: 0.85; }
+.icon-btn.icon-danger { color: #ff5454; opacity: 0.85; }
 .icon-btn.icon-danger:hover { opacity: 1; }
 
 /* ==========================================================================
@@ -193,6 +193,7 @@ body {
   font-weight: 600;
   opacity: 0.8;
   text-align: left;
+  white-space: nowrap;
 }
 
 #queueTable td {
@@ -561,10 +562,13 @@ body.light-mode .pill button {
    Collapsed mode: hide data table (and optionally center/top compact)
    ========================================================================== */
 
-body.is-collapsed #queueTable {
-  display: none;
-}
 /* Collapsed mode: minimal “title bar” footprint */
+body.is-collapsed #prodBar {
+  width: fit-content;
+  padding: 4px 6px;
+}
+
+/* Hide the data table */
 body.is-collapsed #queueTable {
   display: none;
 }
@@ -574,18 +578,19 @@ body.is-collapsed #viewToggle {
   display: none;
 }
 
-/* Tighten vertical spacing */
-body.is-collapsed #prodBar {
-  padding: 4px 8px;
-  gap: 0;
-  min-width: 150px; /* keeps it from becoming a tiny mystery blob */
-}
-
+/* Collapsed: icon-only rail */
 body.is-collapsed #topBar {
-  margin-bottom: 0;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  gap: 10px;
 }
 
-/* Optional: show only the dot (no CONNECTED text) for maximum compactness */
+/* Hide status text completely */
 body.is-collapsed #statusArea .status-text {
   display: none;
+}
+
+/* Center the dot nicely */
+body.is-collapsed #statusArea {
+  padding: 4px;
 }

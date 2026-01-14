@@ -1,14 +1,6 @@
 // app.js
 // alert("app.js loaded: " + new Date().toISOString());
 
-// ----- Electron bridge (via preload) -----
-// Use window + var so re-evaluation never throws (Electron can reuse the same JS context)
-window.__PROD_BAR_BRIDGE__ =
-  window.__PROD_BAR_BRIDGE__ ||
-  (typeof window !== "undefined" && window.prodBar ? window.prodBar : null);
-
-var prodBar = window.__PROD_BAR_BRIDGE__;
-
 // ----- Resize-to-content (renderer -> main) -----
 let lastSizeSent = { w: 0, h: 0 };
 let resizeRaf = 0;
