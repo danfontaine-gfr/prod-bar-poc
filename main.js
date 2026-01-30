@@ -1,6 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
+const BROKER_BASE_URL = process.env.BROKER_BASE_URL || "http://localhost:8787";
+
 let mainWindow;
 
 // ---- stats cache + polling state ----
@@ -47,7 +49,7 @@ mainWindow.webContents.on("console-message", (_e, level, message, line, sourceId
 });
 
 // open devtools so you can see Network/Sources/Console
- mainWindow.webContents.openDevTools({ mode: "detach" });
+mainWindow.webContents.openDevTools({ mode: "detach" });
 
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -100,6 +102,68 @@ ipcMain.handle("stats:setConfig", async (_event, cfg) => {
   return { ok: true };
 });
 
+function toQueueId(queueName) {
+  return String(queueName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function fetchQueueMetrics(queueId) {
+  const url = `${BROKER_BASE_URL}/v1/queues/${encodeURIComponent(queueId)}/stats`;
+  const res = await fetch(url);
+
+  if (!res.ok) throw new Error(`Broker ${res.status} for ${queueId}`);
+  const json = await res.json();
+  return json.metrics || {};
+}
+
+function metricsToRow(queueName, m) {
+  return {
+    queue: queueName,
+
+    // map broker keys -> renderer row keys
+    waiting: m.oWaiting ?? 0,
+    interacting: m.oInteracting ?? 0,
+    onQueueUsers: m.oOnQueueUsers ?? 0,
+    offQueueUsers: m.oOffQueueUsers ?? 0,
+    longestWaiting: m.oLongestWaiting ?? 0,
+
+    asa: m.asa ?? 0,
+    aht: m.aht ?? 0,
+    avgWait: m.avgWait ?? 0,
+    answerPct: m.answerPercent ?? 0,
+    abandonPct: m.abandonPercent ?? 0,
+    serviceLevelPct: m.serviceLevelPercent ?? 0
+  };
+}
+
+async function buildPayloadFromBroker() {
+  const queues = pollConfig.queues || [];
+
+  const rows = await Promise.all(
+    queues.map(async (qName) => {
+      const queueId = toQueueId(qName);
+      try {
+        const metrics = await fetchQueueMetrics(queueId);
+        return metricsToRow(qName, metrics);
+      } catch (e) {
+        // safe fallback row so UI never breaks
+        return metricsToRow(qName, {});
+      }
+    })
+  );
+
+  return {
+    queues: pollConfig.queues,
+    metrics: pollConfig.metrics,
+    rows,
+    updatedAt: Date.now()
+  };
+}
+
+/*
 // ---- mock polling (replace with Genesys provider later) ----
 function formatTime(sec) {
   const s = Math.max(0, Math.floor(sec || 0));
@@ -136,6 +200,7 @@ function buildPayload() {
     updatedAt: Date.now()
   };
 }
+*/
 
 function broadcast(payload) {
   latestStats = payload;
@@ -148,7 +213,7 @@ function broadcast(payload) {
   }
 }
 
-function startPolling() {
+/*function startPolling() {
   if (pollTimer) clearInterval(pollTimer);
 
   // don’t poll if we don’t have queues selected yet
@@ -159,4 +224,26 @@ function startPolling() {
   pollTimer = setInterval(() => {
     broadcast(buildPayload());
   }, pollIntervalMs);
+}
+*/
+let pollInFlight = false;
+
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+
+  if (!pollConfig.queues || pollConfig.queues.length === 0) return;
+
+  const tick = async () => {
+    if (pollInFlight) return;
+    pollInFlight = true;
+    try {
+      const payload = await buildPayloadFromBroker();
+      broadcast(payload);
+    } finally {
+      pollInFlight = false;
+    }
+  };
+
+  tick(); // run immediately
+  pollTimer = setInterval(tick, pollIntervalMs);
 }

@@ -25,6 +25,9 @@ function resizeToContent() {
   });
 }
 
+// ----- Broker location -----
+const BROKER_BASE_URL = "http://localhost:8787";
+
 // ----- Data definitions -----
 const ALL_QUEUES = [
   "Support",
